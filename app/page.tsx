@@ -29,6 +29,7 @@ export default function HomePage() {
           <p className="mb-8 text-lg text-slate-600">
             Sessões de 60 minutos. Você escolhe se a requisição é identificada
             ou anônima. Advogados ficam online e aceitam a fila em tempo real.
+            Demo local sem serviços externos.
           </p>
 
           <div className="flex flex-wrap gap-3">
@@ -51,9 +52,9 @@ export default function HomePage() {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="mb-2 font-semibold text-slate-900">Clientes</h2>
             <p className="text-sm text-slate-600">
-              Conta + créditos (ou pedido anônimo opcional). R$100 / hora →
-              R$80 para o advogado após a sessão. Especialidade na fila;
-              assunto só após aceite.
+              Conta + pedido anônimo opcional. R$100 / hora → R$80 para o
+              advogado após a sessão. Especialidade na fila; assunto só após
+              aceite.
             </p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

@@ -1,5 +1,9 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
-import { Shell, Card, Field, Btn, StubNote } from "@/components/ui";
+import { Shell, Card, Field } from "@/components/ui";
+import { ActionForm } from "@/components/action-form";
+import { clientRegisterAction } from "@/lib/actions/client";
 
 export default function ClientRegisterPage() {
   return (
@@ -10,19 +14,17 @@ export default function ClientRegisterPage() {
           concluir (preço provisório). Você também pode solicitar de forma
           anônima.
         </p>
-        <form className="max-w-md">
+        <ActionForm action={clientRegisterAction} submitLabel="Criar conta">
           <Field label="Nome" name="fullName" required />
           <Field label="E-mail" name="email" type="email" required />
           <Field label="Senha" name="password" type="password" required />
-          <Btn type="submit">Criar conta</Btn>
-        </form>
+        </ActionForm>
         <p className="mt-4 text-sm text-slate-500">
           Já tem conta?{" "}
           <Link href="/client/login" className="text-teal-700 underline">
             Entrar
           </Link>
         </p>
-        <StubNote>Stub de registro + credits_ledger na próxima fase.</StubNote>
       </Card>
     </Shell>
   );
