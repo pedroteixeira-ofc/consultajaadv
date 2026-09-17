@@ -15,10 +15,10 @@ export async function lawyerRegisterAction(
     .trim()
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const oab = String(formData.get("oab") ?? "").trim() || null;
+  const oab = String(formData.get("oab") ?? "").trim();
   const pix_key = String(formData.get("pixKey") ?? "").trim() || null;
 
-  if (!full_name || !email || !password) {
+  if (!full_name || !email || !password || !oab) {
     return { ok: false, error: "Preencha nome, e-mail e senha." };
   }
   if (password.length < 6) {
