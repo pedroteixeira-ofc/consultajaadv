@@ -57,7 +57,7 @@ export function CallRoom({
   if (status === "completed") {
     return (
       <div className="rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900">
-        Sessão encerrada. Payout de R$80 creditado ao advogado (se aplicável).
+        {role === "client" ? "Sessão encerrada. Obrigado por usar o ConsultaJáAdv." : "Sessão encerrada. Repasse de R$80 creditado (se aplicável)."}
       </div>
     );
   }
