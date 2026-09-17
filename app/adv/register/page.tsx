@@ -11,14 +11,15 @@ export default function AdvRegisterPage() {
       <Card>
         <p className="mb-4 text-sm text-slate-600">
           Após o cadastro: fique <strong>online</strong> e aceite a fila
-          pendente. Mensalidade R$50 (opcional no demo) libera e-mail de novas
-          solicitações — não é atendimento só por e-mail.
+          pendente. Por sessão concluída você recebe R$80 (de R$100 pagos pelo
+          cliente). Mensalidade R$50 libera e-mail de novas solicitações —
+          online sem mensalidade ainda pode Aceitar.
         </p>
         <ActionForm action={lawyerRegisterAction} submitLabel="Registrar">
           <Field label="Nome completo" name="fullName" required />
           <Field label="E-mail" name="email" type="email" required />
           <Field label="Senha" name="password" type="password" required />
-          <Field label="OAB (opcional)" name="oab" placeholder="OAB/UF 000000" />
+          <Field label="OAB" name="oab" placeholder="OAB/UF 000000" required />
           <Field
             label="Chave Pix"
             name="pixKey"
