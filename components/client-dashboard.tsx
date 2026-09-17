@@ -38,8 +38,8 @@ export function ClientDashboardClient({
           {formatBRL(creditsCents)}
         </p>
         <p className="mt-2 text-sm text-slate-600">
-          Cada sessão de 60 min custa R$100 (pagamento stub no pedido) → R$80
-          advogado + R$20 plataforma.
+          Cada sessão de 60 min custa R$100.
+           
         </p>
       </Card>
 
