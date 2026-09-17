@@ -10,9 +10,8 @@ export default function ClientRegisterPage() {
     <Shell title="Criar conta (cliente)" backHref="/">
       <Card>
         <p className="mb-4 text-sm text-slate-600">
-          Conta com créditos. Sessão: R$100 / hora → R$80 ao advogado após
-          concluir (preço provisório). Você também pode solicitar de forma
-          anônima.
+          Conta com créditos. Sessão de 1 hora por R$100. Você também pode
+          solicitar de forma anônima.
         </p>
         <ActionForm action={clientRegisterAction} submitLabel="Criar conta">
           <Field label="Nome" name="fullName" required />
