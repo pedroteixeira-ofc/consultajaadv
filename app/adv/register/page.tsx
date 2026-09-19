@@ -11,9 +11,9 @@ export default function AdvRegisterPage() {
       <Card>
         <p className="mb-4 text-sm text-slate-600">
           Após o cadastro: fique <strong>online</strong> e aceite a fila
-          pendente. Por sessão concluída você recebe R$80 (de R$100 pagos pelo
-          cliente). Mensalidade R$50 libera e-mail de novas solicitações —
-          online sem mensalidade ainda pode Aceitar.
+          pendente. Mensalidade libera e-mail de novas solicitações — online
+          sem mensalidade ainda pode Aceitar (após OAB aprovada). WhatsApp é
+          obrigatório (sala usa wa.me).
         </p>
         <ActionForm action={lawyerRegisterAction} submitLabel="Registrar">
           <Field label="Nome completo" name="fullName" required />
@@ -21,9 +21,15 @@ export default function AdvRegisterPage() {
           <Field label="Senha" name="password" type="password" required />
           <Field label="OAB" name="oab" placeholder="OAB/UF 000000" required />
           <Field
+            label="WhatsApp"
+            name="whatsapp"
+            placeholder="11999999999 ou +5511999999999"
+            required
+          />
+          <Field
             label="Chave Pix"
             name="pixKey"
-            placeholder="para payout após sessão"
+            placeholder="para payout após confirmação do cliente"
           />
         </ActionForm>
         <p className="mt-4 text-sm text-slate-500">
