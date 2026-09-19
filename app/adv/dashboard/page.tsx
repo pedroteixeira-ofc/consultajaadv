@@ -24,7 +24,6 @@ export default async function AdvDashboardPage() {
       price_cents: r.price_cents,
       specialty: r.specialty,
       is_anonymous: r.is_anonymous,
-      // subject_summary NÃO enviado à fila (só após accept)
     }));
 
   return (
@@ -36,6 +35,8 @@ export default async function AdvDashboardPage() {
       <LawyerDashboardClient
         initialOnline={lawyer.online}
         subscriptionStatus={lawyer.subscription_status}
+        subscriptionExpiresAt={lawyer.subscription_expires_at}
+        verificationStatus={lawyer.verification_status}
         payoutBalanceCents={lawyer.payout_balance_cents}
         queue={queue}
       />
