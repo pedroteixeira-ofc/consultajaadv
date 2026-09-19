@@ -1,45 +1,44 @@
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
-import { Shell } from "@/components/ui";
-import { LogoutButton } from "@/components/logout-button";
-import { LawyerDashboardClient } from "@/components/lawyer-dashboard";
-import { getSession } from "@/lib/auth";
-import { readStore } from "@/lib/store";
+import Link from "next/link";
+import { Shell, Card, Field } from "@/components/ui";
+import { ActionForm } from "@/components/action-form";
+import { lawyerRegisterAction } from "@/lib/actions/lawyer";
 
-export default async function AdvDashboardPage() {
-  const session = await getSession();
-  if (!session || session.role !== "lawyer") redirect("/adv/login");
-
-  const db = await readStore();
-  const lawyer = db.lawyers.find((p) => p.id === session.sub);
-  if (!lawyer) redirect("/adv/login");
-
-  const queue = db.consultation_requests
-    .filter((r) => r.status === "pending" && r.paid_at && !r.lawyer_id)
-    .sort((a, b) => a.created_at.localeCompare(b.created_at))
-    .map((r) => ({
-      id: r.id,
-      created_at: r.created_at,
-      price_cents: r.price_cents,
-      specialty: r.specialty,
-      is_anonymous: r.is_anonymous,
-    }));
-
+export default function AdvRegisterPage() {
   return (
-    <Shell
-      title={`Painel — ${lawyer.full_name}`}
-      backHref="/"
-      right={<LogoutButton />}
-    >
-      <LawyerDashboardClient
-        initialOnline={lawyer.online}
-        subscriptionStatus={lawyer.subscription_status}
-        subscriptionExpiresAt={lawyer.subscription_expires_at}
-        verificationStatus={lawyer.verification_status}
-        payoutBalanceCents={lawyer.payout_balance_cents}
-        queue={queue}
-      />
+    <Shell title="Cadastro de advogado" backHref="/">
+      <Card>
+        <p className="mb-4 text-sm text-slate-600">
+          Após o cadastro: fique <strong>online</strong> e aceite a fila
+          pendente. Mensalidade libera e-mail de novas solicitações — online
+          sem mensalidade ainda pode Aceitar (após OAB aprovada). WhatsApp é
+          obrigatório (sala usa wa.me).
+        </p>
+        <ActionForm action={lawyerRegisterAction} submitLabel="Registrar">
+          <Field label="Nome completo" name="fullName" required />
+          <Field label="E-mail" name="email" type="email" required />
+          <Field label="Senha" name="password" type="password" required />
+          <Field label="OAB" name="oab" placeholder="OAB/UF 000000" required />
+          <Field
+            label="WhatsApp"
+            name="whatsapp"
+            placeholder="11999999999 ou +5511999999999"
+            required
+          />
+          <Field
+            label="Chave Pix"
+            name="pixKey"
+            placeholder="para payout após confirmação do cliente"
+          />
+        </ActionForm>
+        <p className="mt-4 text-sm text-slate-500">
+          Já tem conta?{" "}
+          <Link href="/adv/login" className="text-teal-700 underline">
+            Entrar
+          </Link>
+        </p>
+      </Card>
     </Shell>
   );
 }
