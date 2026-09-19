@@ -6,25 +6,27 @@ import { Card, formatBRL, StubNote } from "@/components/ui";
 import {
   acceptRequestAction,
   toggleOnlineAction,
-  activateSubscriptionStubAction,
+  startSubscriptionCheckoutAction,
 } from "@/lib/actions/lawyer";
 
 type QueueItem = {
   id: string;
   created_at: string;
   price_cents: number;
-  specialty: string;
-  is_anonymous: boolean;
 };
 
 export function LawyerDashboardClient({
   initialOnline,
   subscriptionStatus,
+  subscriptionExpiresAt,
+  verificationStatus,
   payoutBalanceCents,
   queue,
 }: {
   initialOnline: boolean;
   subscriptionStatus: string;
+  subscriptionExpiresAt: string | null;
+  verificationStatus: string;
   payoutBalanceCents: number;
   queue: QueueItem[];
 }) {
@@ -39,13 +41,22 @@ export function LawyerDashboardClient({
 
   return (
     <>
+      {verificationStatus !== "approved" && (
+        <Card className="mb-4 border-amber-200 bg-amber-50">
+          <p className="text-sm text-amber-900">
+            {verificationStatus === "rejected"
+              ? "Seu OAB foi rejeitado pelo admin. Você não pode aceitar filas."
+              : "Seu cadastro aguarda aprovação do OAB pelo admin. Você pode ficar online, mas não pode Aceitar pedidos até ser aprovado."}
+          </p>
+        </Card>
+      )}
       <Card className="mb-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-semibold">Status online</h2>
             <p className="text-sm text-slate-600">
               Online (mesmo sem mensalidade) pode Aceitar a fila. Mensalidade
-              R$50 active = recebe e-mail de novas solicitações.
+              active = recebe e-mail de novas solicitações.
             </p>
           </div>
           <button
@@ -83,7 +94,7 @@ export function LawyerDashboardClient({
           </span>
           {" · "}
           Mensalidade:{" "}
-          <span className="font-medium">{subscriptionStatus}</span>
+          <span className="font-medium">{subscriptionStatus}{subscriptionExpiresAt ? ` até ${new Date(subscriptionExpiresAt).toLocaleDateString("pt-BR")}` : ""}</span>
           {" · "}
           Saldo payout:{" "}
           <span className="font-semibold text-teal-700">
@@ -97,21 +108,22 @@ export function LawyerDashboardClient({
             disabled={pending}
             onClick={() =>
               start(async () => {
-                await activateSubscriptionStubAction();
+                const r = await startSubscriptionCheckoutAction();
+                if (r && typeof r === "object" && "checkoutUrl" in r && r.checkoutUrl) {
+                  window.location.href = String(r.checkoutUrl);
+                  return;
+                }
                 refresh();
               })
             }
           >
-            (demo) Ativar mensalidade stub → passa a receber e-mail da fila
+            Assinar 30 dias (alertas por e-mail) — LivePix
           </button>
         )}
       </Card>
 
       <Card>
         <h2 className="mb-3 font-semibold">Fila pendente (paga)</h2>
-        <p className="mb-3 text-xs text-slate-500">
-          Especialidade visível agora; assunto/resumo só após Aceitar.
-        </p>
         {error && (
           <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
             {error}
@@ -127,14 +139,11 @@ export function LawyerDashboardClient({
                 className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"
               >
                 <span>
-                  <span className="font-medium text-teal-800">
-                    {r.specialty}
-                  </span>{" "}
-                  · {r.is_anonymous ? "anônimo" : "identificado"} ·{" "}
+                  Pedido{" "}
                   <code className="rounded bg-slate-100 px-1">
                     {r.id.slice(0, 8)}
                   </code>{" "}
-                  · {formatBRL(r.price_cents)} ·{" "}
+                  · identified · {formatBRL(r.price_cents)} ·{" "}
                   {new Date(r.created_at).toLocaleTimeString("pt-BR")}
                 </span>
                 <button
@@ -156,8 +165,8 @@ export function LawyerDashboardClient({
           </ul>
         )}
         <StubNote>
-          First-wins: só o primeiro Aceitar grava o lock. Assunto liberado após
-          accept. Payout Pix só após Encerrar / completed (+R$80).
+          First-wins: só o primeiro Aceitar grava o lock. Payout Pix só após
+          Encerrar / completed (+R$40).
         </StubNote>
       </Card>
     </>

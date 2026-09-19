@@ -39,7 +39,6 @@ export function ClientDashboardClient({
         </p>
         <p className="mt-2 text-sm text-slate-600">
           Cada sessão de 60 min custa R$100.
-           
         </p>
       </Card>
 
@@ -180,7 +179,7 @@ export function ClientDashboardClient({
           </Link>
         </p>
         <StubNote>
-          Payout ao advogado só após completed — não no pedido.
+          Pagamento da sessão no pedido; atendimento após aceite.
         </StubNote>
       </Card>
     </>
