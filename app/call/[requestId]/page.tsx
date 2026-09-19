@@ -5,7 +5,7 @@ import { Shell, Card, StubNote } from "@/components/ui";
 import { CallRoom } from "@/components/call-room";
 import { getSession } from "@/lib/auth";
 import { readStore } from "@/lib/store";
-import { createRoomToken } from "@/lib/livekit";
+import { whatsappMeUrl } from "@/lib/whatsapp";
 
 export default async function CallPage({
   params,
@@ -32,18 +32,10 @@ export default async function CallPage({
     );
   }
 
-  const token = await createRoomToken({
-    requestId,
-    identity: session.sub,
-    name: session.email,
-  });
-
-  const role =
-    session.role === "admin"
-      ? "admin"
-      : session.role === "lawyer"
-        ? "lawyer"
-        : "client";
+  const lawyer = req.lawyer_id
+    ? db.lawyers.find((p) => p.id === req.lawyer_id)
+    : null;
+  const wa = whatsappMeUrl(lawyer?.whatsapp ?? null);
 
   return (
     <Shell
@@ -59,20 +51,18 @@ export default async function CallPage({
       <Card>
         <CallRoom
           requestId={requestId}
-          role={role}
+          role={session.role === "admin" ? "admin" : session.role}
           callStartedAt={req.call_started_at ?? req.accepted_at}
           status={req.status}
           sessionMinutes={db.platform_settings.session_duration_minutes}
-          specialty={req.specialty}
-          subjectSummary={req.subject_summary}
-          isAnonymous={req.is_anonymous}
+          whatsappUrl={wa}
+          lawyerName={lawyer?.full_name ?? null}
+          lawyerOab={lawyer?.oab ?? null}
         />
-        <p className="mt-4 text-xs text-slate-400">
-          LiveKit room: {token.roomName} (token stub)
-        </p>
         <StubNote>
-          Encerrar → status completed → payout R$80 no saldo do advogado.
-          Assunto liberado ao advogado após o accept.
+          Repasse ao advogado só após o cliente confirmar o atendimento. SAC
+          nesta sessão coloca o valor em HOLD para o admin. Clientes anônimos
+          também confirmam pelo token da sessão.
         </StubNote>
       </Card>
     </Shell>
