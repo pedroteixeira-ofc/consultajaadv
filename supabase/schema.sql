@@ -53,7 +53,7 @@ create table if not exists lawyers (
   email text not null unique,
   password_hash text not null,
   full_name text not null,
-  oab text,                                              -- OAB (opcional no skeleton)
+  oab text,                                              -- OAB obrigatório no cadastro (app)
   pix_key text,                                          -- chave Pix para payout
   subscription_status text not null default 'pending'
     check (subscription_status in ('pending', 'active', 'past_due', 'cancelled')),
