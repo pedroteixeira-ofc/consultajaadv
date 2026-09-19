@@ -5,15 +5,16 @@
 import { createSupabaseServiceClient } from "@/lib/supabase";
 import {
   Admin,
-  AnonymousUser,
   Client,
   ConsultationRequest,
   CreditsLedgerEntry,
   DEFAULT_PRICES,
   EmailLogEntry,
-  Lawyer,
   Payout,
+  PayoutBatch,
   PlatformSettings,
+  AnonymousUser,
+  Lawyer,
   SacTicket,
 } from "@/lib/types";
 import type { Database } from "./json-store";
@@ -109,6 +110,7 @@ async function loadDb(client: SupabaseClient): Promise<Database> {
     sac_tickets,
     settingsRows,
     payouts,
+    payout_batches,
     emailRows,
   ] = await Promise.all([
     selectAll<Admin>(client, "admins"),
@@ -120,6 +122,7 @@ async function loadDb(client: SupabaseClient): Promise<Database> {
     selectAll<SacTicket>(client, "sac_tickets"),
     selectAll<PlatformSettings>(client, "platform_settings"),
     selectAll<Payout>(client, "payouts"),
+    selectAll<PayoutBatch>(client, "payout_batches"),
     selectAll<EmailLogRow>(client, "email_log"),
   ]);
 
@@ -133,18 +136,24 @@ async function loadDb(client: SupabaseClient): Promise<Database> {
     sac_tickets,
     platform_settings: settingsRows[0] ?? emptySettings(),
     payouts,
+    payout_batches: payout_batches ?? [],
     email_log: emailRows.map(emailFromRow),
   };
 }
 
 async function persistDb(client: SupabaseClient, before: Database, db: Database) {
+  // Upsert parents → children
   await upsertRows(client, "admins", db.admins as unknown as Record<string, unknown>[]);
-  await upsertRows(client, "lawyers", db.lawyers as unknown as Record<string, unknown>[]);
+  await upsertRows(
+    client,
+    "lawyers",
+    db.lawyers as unknown as Record<string, unknown>[]
+  );
   await upsertRows(client, "clients", db.clients as unknown as Record<string, unknown>[]);
   await upsertRows(
     client,
     "anonymous_users",
-    db.anonymous_users as unknown as Record<string, unknown>[]
+    (db.anonymous_users ?? []) as unknown as Record<string, unknown>[]
   );
   await upsertRows(
     client,
@@ -164,6 +173,11 @@ async function persistDb(client: SupabaseClient, before: Database, db: Database)
   await upsertRows(client, "payouts", db.payouts as unknown as Record<string, unknown>[]);
   await upsertRows(
     client,
+    "payout_batches",
+    (db.payout_batches ?? []) as unknown as Record<string, unknown>[]
+  );
+  await upsertRows(
+    client,
     "email_log",
     db.email_log.map(emailToRow) as unknown as Record<string, unknown>[]
   );
@@ -173,11 +187,18 @@ async function persistDb(client: SupabaseClient, before: Database, db: Database)
     .upsert(db.platform_settings);
   throwOnError(settingsErr, "upsert platform_settings");
 
+  // Delete children → parents (ids that disappeared)
   await deleteMissing(
     client,
     "email_log",
     before.email_log.map((r) => r.id),
     new Set(db.email_log.map((r) => r.id))
+  );
+  await deleteMissing(
+    client,
+    "payout_batches",
+    (before.payout_batches ?? []).map((r) => r.id),
+    new Set((db.payout_batches ?? []).map((r) => r.id))
   );
   await deleteMissing(
     client,
@@ -202,12 +223,6 @@ async function persistDb(client: SupabaseClient, before: Database, db: Database)
     "consultation_requests",
     before.consultation_requests.map((r) => r.id),
     new Set(db.consultation_requests.map((r) => r.id))
-  );
-  await deleteMissing(
-    client,
-    "anonymous_users",
-    before.anonymous_users.map((r) => r.id),
-    new Set(db.anonymous_users.map((r) => r.id))
   );
   await deleteMissing(
     client,
@@ -257,12 +272,13 @@ export async function mutateStore<T>(
       admins: [...before.admins],
       lawyers: [...before.lawyers],
       clients: [...before.clients],
-      anonymous_users: [...before.anonymous_users],
+      anonymous_users: [...(before.anonymous_users ?? [])],
       consultation_requests: [...before.consultation_requests],
       credits_ledger: [...before.credits_ledger],
       sac_tickets: [...before.sac_tickets],
       platform_settings: { ...before.platform_settings },
       payouts: [...before.payouts],
+      payout_batches: [...(before.payout_batches ?? [])],
       email_log: [...before.email_log],
     };
     const result = mutator(db);
