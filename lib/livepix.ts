@@ -2,12 +2,15 @@
  * LivePix client — real OAuth2 + payments API when credentials are set;
  * stub checkout otherwise (demo via /api/payments/stub-confirm).
  *
- * Prefers CONSULTAJA-specific env vars, then shared LIVEPIX_* fallbacks.
+ * Prefers CONSULTAJAADV-specific env vars, then shared LIVEPIX_* fallbacks.
  *
  * Docs: https://docs.livepix.gg/api/
  * - POST https://oauth.livepix.gg/oauth2/token (client_credentials)
  * - POST https://api.livepix.gg/v2/payments { amount, currency, redirectUrl }
  */
+
+import { isStubPaymentsAllowed } from "@/lib/demo";
+
 
 const OAUTH_URL = "https://oauth.livepix.gg/oauth2/token";
 const PAYMENTS_URL = "https://api.livepix.gg/v2/payments";
@@ -35,12 +38,12 @@ let tokenCache: TokenCache | null = null;
 
 export function getLivePixEnv() {
   const clientId =
-    process.env.LIVEPIX_CLIENT_ID_CONSULTAJA?.trim() ||
+    process.env.LIVEPIX_CLIENT_ID_CONSULTAJAADV?.trim() ||
     process.env.LIVEPIX_CLIENT_ID?.trim() ||
     process.env.LIVEPIX_API_KEY?.trim() ||
     "";
   const clientSecret =
-    process.env.LIVEPIX_CLIENT_SECRET_CONSULTAJA?.trim() ||
+    process.env.LIVEPIX_CLIENT_SECRET_CONSULTAJAADV?.trim() ||
     process.env.LIVEPIX_CLIENT_SECRET?.trim() ||
     "";
   return {
@@ -127,6 +130,13 @@ export async function createCheckout(
   input: LivePixCheckoutInput
 ): Promise<LivePixCheckoutResult> {
   if (!isLivePixConfigured()) {
+    if (!isStubPaymentsAllowed()) {
+      return {
+        ok: false,
+        error:
+          "LivePix não configurado. Defina LIVEPIX_CLIENT_ID/SECRET (ou DEMO=1 em dev).",
+      };
+    }
     return stubCheckout(input);
   }
 

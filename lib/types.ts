@@ -22,6 +22,15 @@ export type SacStatus = "open" | "in_progress" | "resolved" | "closed";
 
 export type PayoutStatus = "pending" | "processing" | "paid" | "failed";
 
+export type VerificationStatus = "pending" | "approved" | "rejected";
+
+export type PayoutReleaseStatus =
+  | "pending_client"
+  | "eligible"
+  | "needs_admin_review"
+  | "released"
+  | "denied";
+
 /** Preços default (espelham platform_settings) — provisórios */
 export const DEFAULT_PRICES = {
   monthlyFeeCents: 5000, // R$50 mensalidade (= e-mails)
@@ -44,8 +53,13 @@ export type Lawyer = {
   password_hash: string;
   full_name: string;
   oab: string | null;
+  /** WhatsApp E.164 ou BR — obrigatório no cadastro */
+  whatsapp: string | null;
   pix_key: string | null;
   subscription_status: SubscriptionStatus;
+  /** ISO — mensalidade libera alertas de e-mail por 30 dias */
+  subscription_expires_at: string | null;
+  verification_status: VerificationStatus;
   online: boolean;
   payout_balance_cents: number;
   created_at: string;
@@ -89,6 +103,16 @@ export type ConsultationRequest = {
   refund_requested: boolean;
   refunded_at: string | null;
   payout_credited: boolean;
+  attendance_confirmed_by_client: boolean;
+  attendance_confirmed_at: string | null;
+  client_rating_of_lawyer: number | null;
+  client_rating_comment: string | null;
+  lawyer_rating_of_client: number | null;
+  lawyer_rating_comment: string | null;
+  payout_release_status: PayoutReleaseStatus;
+  sac_linked_at: string | null;
+  payout_withheld: boolean;
+  payout_withheld_reason: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -134,6 +158,17 @@ export type Payout = {
   pix_key: string;
   status: PayoutStatus;
   provider_ref: string | null;
+  payout_batch_id: string | null;
+  created_at: string;
+  paid_at: string | null;
+};
+
+export type PayoutBatch = {
+  id: string;
+  label: string;
+  status: "open" | "paid";
+  total_cents: number;
+  notes: string | null;
   created_at: string;
   paid_at: string | null;
 };
