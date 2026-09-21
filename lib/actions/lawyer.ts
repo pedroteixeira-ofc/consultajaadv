@@ -74,7 +74,7 @@ export async function lawyerRegisterAction(
   if (!result.ok) return result;
 
   await setSession({ role: "lawyer", sub: id, email });
-  redirect("/lawyer/dashboard");
+  redirect("/adv/dashboard");
 }
 
 export async function lawyerLoginAction(
@@ -93,7 +93,7 @@ export async function lawyerLoginAction(
     return { ok: false, error: "Credenciais inválidas." };
   }
   await setSession({ role: "lawyer", sub: lawyer.id, email: lawyer.email });
-  redirect("/lawyer/dashboard");
+  redirect("/adv/dashboard");
 }
 
 export async function toggleOnlineAction(): Promise<ActionResult> {
@@ -189,14 +189,14 @@ export async function startSubscriptionCheckoutAction(): Promise<
       p.subscription_expires_at = expiresIn30DaysIso();
       p.updated_at = nowIso();
     });
-    return { ok: true, checkoutUrl: "/lawyer/dashboard?sub=stub" };
+    return { ok: true, checkoutUrl: "/adv/dashboard?sub=stub" };
   }
 
   const checkout = await createCheckout({
     amountCents: amount,
     description: "Mensalidade ConsultaJáAdv — alertas 30 dias",
     externalId,
-    returnUrl: "/lawyer/dashboard?sub=return",
+    returnUrl: "/adv/dashboard?sub=return",
   });
   if (!checkout.ok || !checkout.checkoutUrl) {
     return { ok: false, error: checkout.error ?? "Falha ao criar checkout" };
