@@ -7,6 +7,7 @@ import { LogoutButton } from "@/components/logout-button";
 import { getSession } from "@/lib/auth";
 import { readStore, storeBackendLabel } from "@/lib/store";
 import { adminCompleteFormAction } from "@/lib/actions/admin-complete";
+import { AdminPriceSettings } from "@/components/admin-panel";
 
 export default async function AdminDashboardPage() {
   const session = await getSession();
@@ -62,6 +63,16 @@ export default async function AdminDashboardPage() {
             <li>Clientes: {db.clients.length}</li>
           </ul>
         </Card>
+      </div>
+
+      <div className="mt-4">
+        <AdminPriceSettings
+          priceCents={db.platform_settings.price_cents}
+          lawyerCutCents={db.platform_settings.lawyer_cut_cents}
+          platformCutCents={db.platform_settings.platform_cut_cents}
+          monthlyFeeCents={db.platform_settings.monthly_fee_cents}
+          sessionMinutes={db.platform_settings.session_duration_minutes}
+        />
       </div>
 
       {inCall.length > 0 && (
