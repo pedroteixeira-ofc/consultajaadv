@@ -1,17 +1,22 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Shell, Card, Field } from "@/components/ui";
+import { Shell, Card, Field, formatBRL } from "@/components/ui";
 import { ActionForm } from "@/components/action-form";
 import { clientRegisterAction } from "@/lib/actions/client";
+import { readStore } from "@/lib/store";
 
-export default function ClientRegisterPage() {
+export default async function ClientRegisterPage() {
+  const db = await readStore();
+  const price = formatBRL(db.platform_settings.price_cents);
+  const minutes = db.platform_settings.session_duration_minutes;
+
   return (
     <Shell title="Criar conta (cliente)" backHref="/">
       <Card>
         <p className="mb-4 text-sm text-slate-600">
-          Conta com créditos. Sessão de 1 hora por R$100. Você também pode
-          solicitar de forma anônima.
+          Conta com créditos. Sessão de {minutes} minutos por {price}. Você
+          também pode solicitar de forma anônima.
         </p>
         <ActionForm action={clientRegisterAction} submitLabel="Criar conta">
           <Field label="Nome" name="fullName" required />
