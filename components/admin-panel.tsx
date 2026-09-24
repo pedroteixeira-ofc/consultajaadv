@@ -9,6 +9,7 @@ import {
   releasePayoutAction,
   denyPayoutAction,
   markPayoutBatchPaidAction,
+  savePlatformPricesAction,
 } from "@/lib/actions/admin";
 
 type LawyerRow = {
@@ -370,5 +371,141 @@ export function AdminPanel({
         </Card>
       )}
     </div>
+  );
+}
+
+
+function centsToReaisInput(cents: number): string {
+  return (cents / 100).toFixed(2);
+}
+
+function parseDraftReais(raw: string): number | null {
+  const n = Number(String(raw).trim().replace(",", "."));
+  if (!Number.isFinite(n)) return null;
+  return Math.round(n * 100);
+}
+
+/** Focused price editor for admin dashboard (Settings). */
+export function AdminPriceSettings({
+  priceCents,
+  lawyerCutCents,
+  platformCutCents,
+  monthlyFeeCents,
+  sessionMinutes,
+}: {
+  priceCents: number;
+  lawyerCutCents: number;
+  platformCutCents: number;
+  monthlyFeeCents: number;
+  sessionMinutes: number;
+}) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [okMsg, setOkMsg] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  const [priceDraft, setPriceDraft] = useState(centsToReaisInput(priceCents));
+  const [lawyerCutDraft, setLawyerCutDraft] = useState(
+    centsToReaisInput(lawyerCutCents)
+  );
+  const [monthlyDraft, setMonthlyDraft] = useState(
+    centsToReaisInput(monthlyFeeCents)
+  );
+  const previewPrice = parseDraftReais(priceDraft);
+  const previewCut = parseDraftReais(lawyerCutDraft);
+  const previewPlatform =
+    previewPrice != null && previewCut != null
+      ? Math.max(0, previewPrice - previewCut)
+      : platformCutCents;
+
+  return (
+    <Card>
+      <h2 className="mb-3 font-semibold">Preços da consulta</h2>
+      <p className="mb-3 text-xs text-slate-500">
+        Valores em reais (R$). Sessão atual: {sessionMinutes} min.
+      </p>
+      {error && (
+        <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+          {error}
+        </p>
+      )}
+      {okMsg && (
+        <p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          {okMsg}
+        </p>
+      )}
+      <div className="mb-3 grid gap-3 sm:grid-cols-3">
+        <label className="block text-sm">
+          <span className="mb-1 block text-slate-600">Cobrado do cliente</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={priceDraft}
+            onChange={(e) => setPriceDraft(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block text-slate-600">Repasse ao advogado</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={lawyerCutDraft}
+            onChange={(e) => setLawyerCutDraft(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="block text-sm">
+          <span className="mb-1 block text-slate-600">Mensalidade</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            value={monthlyDraft}
+            onChange={(e) => setMonthlyDraft(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+          />
+        </label>
+      </div>
+      <ul className="mb-3 list-inside list-disc text-xs text-slate-600">
+        <li>
+          Cobrado: {previewPrice != null ? formatBRL(previewPrice) : "—"}
+        </li>
+        <li>
+          Repasse profissional:{" "}
+          {previewCut != null ? formatBRL(previewCut) : "—"}
+        </li>
+        <li>
+          Taxa plataforma:{" "}
+          {previewPlatform != null ? formatBRL(previewPlatform) : "—"} (=
+          cobrado − repasse)
+        </li>
+      </ul>
+      <p className="mb-3 text-xs text-slate-500">
+        Ao salvar, a página principal e novos pedidos usam estes valores.
+        Pedidos já criados mantêm o preço antigo.
+      </p>
+      <button
+        type="button"
+        disabled={pending}
+        className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+        onClick={() =>
+          start(async () => {
+            setError(null);
+            setOkMsg(null);
+            const fd = new FormData();
+            fd.set("priceReais", priceDraft);
+            fd.set("lawyerCutReais", lawyerCutDraft);
+            fd.set("monthlyFeeReais", monthlyDraft);
+            const r = await savePlatformPricesAction(fd);
+            if (!r.ok) setError(r.error);
+            else {
+              setOkMsg("Preços salvos.");
+              router.refresh();
+            }
+          })
+        }
+      >
+        Salvar preços
+      </button>
+    </Card>
   );
 }
